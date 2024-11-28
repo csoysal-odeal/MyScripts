@@ -225,10 +225,82 @@ WHERE sh.terminalId IS NOT NULL
 GROUP BY DATE_FORMAT(i.periodEnd,"%Y-%m"), i.subscriptionId, sh.terminalId, i.invoiceStatus, i.id, SonIslem.IslemTutar,
 SonIslem.IslemTarihi, SonIslem.GeriOdemeTarih, SonIslem.GeriOdemeTutar, SonIslem.GeriOdemeDurumu, SonIslem.GeriOdemeID) as Fatura WHERE Fatura.organisationId = 301035518;
 
-SELECT os.odeal_satis_id as SatisID,
-       os.organisation_id as UyeID,
-       os.mali_no as MaliNo,
-       os.invoice_total as CihazBedeli
-FROM odeal_satis os WHERE os.organisation_id IS NOT NULL
-AND os.odeal_satis_id IN (
-SELECT MAX(os.odeal_satis_id) FROM odeal_satis os WHERE os.organisation_id IS NOT NULL GROUP BY os.organisation_id, os.mali_no)
+SELECT *,
+COUNT(CASE WHEN Fatura.FaturaDurum="ÖDENDİ" THEN Fatura.terminalId END) OVER (PARTITION BY Fatura.Donem, Fatura.organisationId, Fatura.terminalId) as OdendiDonemAdet,
+SUM(CASE WHEN Fatura.FaturaDurum="ÖDENDİ" THEN Fatura.OdendiTutar END) OVER (PARTITION BY Fatura.Donem, Fatura.organisationId, Fatura.terminalId) as OdendiDonemTutar,
+COUNT(CASE WHEN Fatura.FaturaDurum="ÖDENMEDİ" THEN Fatura.terminalId END) OVER (PARTITION BY Fatura.Donem, Fatura.organisationId, Fatura.subscriptionId, Fatura.terminalId) as OdenmediDonemAdet,
+SUM(CASE WHEN Fatura.FaturaDurum="ÖDENMEDİ" THEN Fatura.OdenmeyenTutar END) OVER (PARTITION BY Fatura.Donem, Fatura.organisationId, Fatura.subscriptionId, Fatura.terminalId) as OdenmediDonemTutar,
+COUNT(CASE WHEN Fatura.FaturaDurum="ÖDENMEYECEK" THEN Fatura.OdenmeyecekAdet END) OVER (PARTITION BY Fatura.Donem, Fatura.organisationId, Fatura.FaturaID) as OdenmeyecekDonemAdet,
+SUM(CASE WHEN Fatura.FaturaDurum="ÖDENMEYECEK" THEN Fatura.OdenmeyecekTutar END) OVER (PARTITION BY Fatura.Donem, Fatura.organisationId, Fatura.FaturaID) as OdenmeyecekDonemTutar,
+Fatura.KalanTutar as KalanFaturaTutar
+FROM (
+SELECT DISTINCT i.subscriptionId as FaturaAbonelik,
+                DATE_FORMAT(i.periodEnd,"%Y-%m") as Donem,
+CASE WHEN i.invoiceStatus=0 THEN "ÖDENMEDİ"
+    WHEN i.invoiceStatus=1 THEN "ÖDENDİ"
+    WHEN i.invoiceStatus=2 THEN "ÖDENMEYECEK"
+    WHEN i.invoiceStatus=3 THEN "HUKUKİ SÜREÇTE"
+    END as FaturaDurum,
+i.id as FaturaID,
+i.organisationId,
+i.createdAt as FaturaKesimTarihi,
+sh.terminalId,
+sh.subscriptionId,
+t.serial_no,
+CASE WHEN t.terminalStatus=0 THEN "PASİF" ELSE "AKTİF" END as TerminalDurum,
+COUNT(CASE WHEN i.invoiceStatus = 0 THEN i.id END) OVER (PARTITION BY o.id, i.id, t.id, DATE_FORMAT(i.periodEnd,"%Y-%m")) as OdenmeyenAdet,
+SUM(CASE WHEN i.invoiceStatus = 0 THEN i.totalAmount END) OVER (PARTITION BY o.id, i.id, t.id, i.subscriptionId, DATE_FORMAT(i.periodEnd,"%Y-%m")) as OdenmeyenTutar,
+COUNT(CASE WHEN i.invoiceStatus = 1 THEN i.id END) OVER (PARTITION BY o.id, i.id, t.id, DATE_FORMAT(i.periodEnd,"%Y-%m")) as OdendiAdet,
+SUM(CASE WHEN i.invoiceStatus = 1 THEN i.totalAmount END) OVER (PARTITION BY o.id, i.id, t.id, DATE_FORMAT(i.periodEnd,"%Y-%m")) as OdendiTutar,
+COUNT(CASE WHEN i.invoiceStatus = 2 THEN i.id END) OVER (PARTITION BY o.id, i.id, t.id, DATE_FORMAT(i.periodEnd,"%Y-%m")) as OdenmeyecekAdet,
+SUM(CASE WHEN i.invoiceStatus = 2 THEN i.totalAmount END) OVER (PARTITION BY o.id, i.id, t.id, DATE_FORMAT(i.periodEnd,"%Y-%m")) as OdenmeyecekTutar,
+SUM(CASE WHEN i.invoiceStatus = 0 THEN i.remainingAmount END) OVER (PARTITION BY o.id, i.id, i.subscriptionId, DATE_FORMAT(i.periodEnd,"%Y-%m")) as KalanTutar
+FROM subscription.Invoice i
+LEFT JOIN subscription.SubscriptionHistory sh ON sh.subscriptionId = i.subscriptionId
+LEFT JOIN odeal.Terminal t ON t.id = sh.terminalId AND t.subscription_id = sh.subscriptionId
+JOIN odeal.Organisation o ON o.id = t.organisation_id AND o.demo = 0
+WHERE sh.terminalId IS NOT NULL
+GROUP BY DATE_FORMAT(i.periodEnd,"%Y-%m"), i.subscriptionId, sh.terminalId, i.invoiceStatus, i.id, t.id) as Fatura WHERE Fatura.organisationId = 301000162;
+
+
+SELECT DISTINCT i.subscriptionId as FaturaAbonelik,
+                DATE_FORMAT(i.periodEnd,"%Y-%m") as Donem,
+CASE WHEN i.invoiceStatus=0 THEN "ÖDENMEDİ"
+    WHEN i.invoiceStatus=1 THEN "ÖDENDİ"
+    WHEN i.invoiceStatus=2 THEN "ÖDENMEYECEK"
+    WHEN i.invoiceStatus=3 THEN "HUKUKİ SÜREÇTE"
+    END as FaturaDurum,
+i.id as FaturaID,
+i.organisationId,
+i.createdAt as FaturaKesimTarihi,
+sh.terminalId,
+sh.subscriptionId,
+t.serial_no,
+CASE WHEN t.terminalStatus=0 THEN "PASİF" ELSE "AKTİF" END as TerminalDurum,
+COUNT(CASE WHEN i.invoiceStatus = 0 THEN i.id END) OVER (PARTITION BY o.id, i.id, DATE_FORMAT(i.periodEnd,"%Y-%m")) as OdenmeyenAdet,
+SUM(CASE WHEN i.invoiceStatus = 0 THEN i.totalAmount END) OVER (PARTITION BY o.id, i.id, i.subscriptionId, DATE_FORMAT(i.periodEnd,"%Y-%m")) as OdenmeyenTutar,
+COUNT(CASE WHEN i.invoiceStatus = 1 THEN i.id END) OVER (PARTITION BY o.id, i.id, t.id, DATE_FORMAT(i.periodEnd,"%Y-%m")) as OdendiAdet,
+SUM(CASE WHEN i.invoiceStatus = 1 THEN i.totalAmount END) OVER (PARTITION BY o.id, i.id, t.id, DATE_FORMAT(i.periodEnd,"%Y-%m")) as OdendiTutar,
+COUNT(CASE WHEN i.invoiceStatus = 2 THEN i.id END) OVER (PARTITION BY o.id, i.id, t.id, DATE_FORMAT(i.periodEnd,"%Y-%m")) as OdenmeyecekAdet,
+SUM(CASE WHEN i.invoiceStatus = 2 THEN i.totalAmount END) OVER (PARTITION BY o.id, i.id, t.id, DATE_FORMAT(i.periodEnd,"%Y-%m")) as OdenmeyecekTutar,
+SUM(CASE WHEN i.invoiceStatus = 0 THEN i.remainingAmount END) OVER (PARTITION BY o.id, i.id, i.subscriptionId, DATE_FORMAT(i.periodEnd,"%Y-%m")) as KalanTutar
+FROM subscription.Invoice i
+LEFT JOIN subscription.SubscriptionHistory sh ON sh.subscriptionId = i.subscriptionId
+JOIN odeal.Terminal t ON t.id = sh.terminalId
+JOIN odeal.Organisation o ON o.id = t.organisation_id AND o.demo = 0
+WHERE sh.terminalId IS NOT NULL AND o.id = 301000162
+GROUP BY DATE_FORMAT(i.periodEnd,"%Y-%m"), i.subscriptionId, sh.terminalId, i.invoiceStatus, i.id
+
+SELECT o.id, t.serial_no,i.id, i.subscriptionId
+FROM subscription.Invoice i
+LEFT JOIN (SELECT * FROM subscription.SubscriptionHistory sh WHERE sh.id IN (
+SELECT MAX(sh1.id) FROM subscription.SubscriptionHistory sh1  WHERE sh1.terminalId = 116513 GROUP BY sh1.subscriptionId)) as SH ON SH.subscriptionId = i.subscriptionId
+LEFT JOIN odeal.Terminal t ON t.id = SH.terminalId
+JOIN odeal.Organisation o ON o.id = t.organisation_id AND o.demo = 0
+WHERE SH.terminalId IS NOT NULL AND o.id = 301000162
+
+
+SELECT * FROM subscription.SubscriptionHistory sh WHERE sh.id IN (
+SELECT MAX(sh.id) FROM subscription.SubscriptionHistory sh  WHERE sh.terminalId = 116513 GROUP BY sh.subscriptionId);
+
+SELECT * FROM subscription.SubscriptionHistory sh WHERE sh.terminalId = 116513;

@@ -224,15 +224,15 @@ SonIslem.GeriOdemeTarih,
 SonIslem.GeriOdemeTutar,
 SonIslem.GeriOdemeDurumu,
 SonIslem.GeriOdemeID,
-COUNT(CASE WHEN i.invoiceStatus = 0 THEN i.id END) OVER (PARTITION BY o.id, t.id, i.id, DATE_FORMAT(i.periodEnd,"%Y-%m")) as OdenmeyenAdet,
-SUM(CASE WHEN i.invoiceStatus = 0 THEN i.totalAmount END) OVER (PARTITION BY o.id, t.id, i.id, DATE_FORMAT(i.periodEnd,"%Y-%m")) as OdenmeyenTutar,
-COUNT(CASE WHEN i.invoiceStatus = 1 THEN i.id END) OVER (PARTITION BY o.id, t.id, i.id, DATE_FORMAT(i.periodEnd,"%Y-%m")) as OdendiAdet,
-SUM(CASE WHEN i.invoiceStatus = 1 THEN i.totalAmount END) OVER (PARTITION BY o.id, t.id, i.id, DATE_FORMAT(i.periodEnd,"%Y-%m")) as OdendiTutar,
-COUNT(CASE WHEN i.invoiceStatus = 2 THEN i.id END) OVER (PARTITION BY o.id, t.id, i.id, DATE_FORMAT(i.periodEnd,"%Y-%m")) as OdenmeyecekAdet,
-SUM(CASE WHEN i.invoiceStatus = 2 THEN i.totalAmount END) OVER (PARTITION BY o.id, t.id, i.id, DATE_FORMAT(i.periodEnd,"%Y-%m")) as OdenmeyecekTutar,
-COUNT(CASE WHEN i.invoiceStatus = 3 THEN i.id END) OVER (PARTITION BY o.id, t.id, i.id, DATE_FORMAT(i.periodEnd,"%Y-%m")) as HukukiSurecAdet,
-SUM(CASE WHEN i.invoiceStatus = 3 THEN i.totalAmount END) OVER (PARTITION BY o.id, t.id, i.id, DATE_FORMAT(i.periodEnd,"%Y-%m")) as HukukiSurecTutar,
-SUM(CASE WHEN i.invoiceStatus = 0 THEN i.remainingAmount END) OVER (PARTITION BY o.id, t.id, i.id, DATE_FORMAT(i.periodEnd,"%Y-%m")) as KalanTutar
+COUNT(CASE WHEN i.invoiceStatus = 0 THEN i.id END) OVER (PARTITION BY o.id, i.id, DATE_FORMAT(i.periodEnd,"%Y-%m")) as OdenmeyenAdet,
+SUM(CASE WHEN i.invoiceStatus = 0 THEN i.totalAmount END) OVER (PARTITION BY o.id, i.id, DATE_FORMAT(i.periodEnd,"%Y-%m")) as OdenmeyenTutar,
+COUNT(CASE WHEN i.invoiceStatus = 1 THEN i.id END) OVER (PARTITION BY o.id, i.id, DATE_FORMAT(i.periodEnd,"%Y-%m")) as OdendiAdet,
+SUM(CASE WHEN i.invoiceStatus = 1 THEN i.totalAmount END) OVER (PARTITION BY o.id, i.id, DATE_FORMAT(i.periodEnd,"%Y-%m")) as OdendiTutar,
+COUNT(CASE WHEN i.invoiceStatus = 2 THEN i.id END) OVER (PARTITION BY o.id, i.id, DATE_FORMAT(i.periodEnd,"%Y-%m")) as OdenmeyecekAdet,
+SUM(CASE WHEN i.invoiceStatus = 2 THEN i.totalAmount END) OVER (PARTITION BY o.id, i.id, DATE_FORMAT(i.periodEnd,"%Y-%m")) as OdenmeyecekTutar,
+COUNT(CASE WHEN i.invoiceStatus = 3 THEN i.id END) OVER (PARTITION BY o.id, i.id, DATE_FORMAT(i.periodEnd,"%Y-%m")) as HukukiSurecAdet,
+SUM(CASE WHEN i.invoiceStatus = 3 THEN i.totalAmount END) OVER (PARTITION BY o.id, i.id, DATE_FORMAT(i.periodEnd,"%Y-%m")) as HukukiSurecTutar,
+SUM(CASE WHEN i.invoiceStatus = 0 THEN i.remainingAmount END) OVER (PARTITION BY o.id, i.id, DATE_FORMAT(i.periodEnd,"%Y-%m")) as KalanTutar
 FROM subscription.Invoice i
 LEFT JOIN subscription.SubscriptionHistory sh ON sh.subscriptionId = i.subscriptionId
 JOIN odeal.Terminal t ON t.id = sh.terminalId
@@ -264,3 +264,5 @@ left join odeal.City c on c.id = oo.cityId
 where 1=1
     and date(created_date) >= '2022-04-01'
 order by merchant_id
+
+SELECT * FROM odeal.EInvoice ei WHERE ei.created_date >= "2024-11-25 00:00:00" ORDER BY ei.created_date DESC LIMIT 10
