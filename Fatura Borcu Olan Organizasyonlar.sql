@@ -244,23 +244,16 @@ CASE WHEN i.invoiceStatus=0 THEN "ÖDENMEDİ"
 i.id as FaturaID,
 i.organisationId,
 i.createdAt as FaturaKesimTarihi,
-sh.terminalId,
-sh.subscriptionId,
-t.serial_no,
-CASE WHEN t.terminalStatus=0 THEN "PASİF" ELSE "AKTİF" END as TerminalDurum,
-COUNT(CASE WHEN i.invoiceStatus = 0 THEN i.id END) OVER (PARTITION BY o.id, i.id, t.id, DATE_FORMAT(i.periodEnd,"%Y-%m")) as OdenmeyenAdet,
-SUM(CASE WHEN i.invoiceStatus = 0 THEN i.totalAmount END) OVER (PARTITION BY o.id, i.id, t.id, i.subscriptionId, DATE_FORMAT(i.periodEnd,"%Y-%m")) as OdenmeyenTutar,
-COUNT(CASE WHEN i.invoiceStatus = 1 THEN i.id END) OVER (PARTITION BY o.id, i.id, t.id, DATE_FORMAT(i.periodEnd,"%Y-%m")) as OdendiAdet,
-SUM(CASE WHEN i.invoiceStatus = 1 THEN i.totalAmount END) OVER (PARTITION BY o.id, i.id, t.id, DATE_FORMAT(i.periodEnd,"%Y-%m")) as OdendiTutar,
-COUNT(CASE WHEN i.invoiceStatus = 2 THEN i.id END) OVER (PARTITION BY o.id, i.id, t.id, DATE_FORMAT(i.periodEnd,"%Y-%m")) as OdenmeyecekAdet,
-SUM(CASE WHEN i.invoiceStatus = 2 THEN i.totalAmount END) OVER (PARTITION BY o.id, i.id, t.id, DATE_FORMAT(i.periodEnd,"%Y-%m")) as OdenmeyecekTutar,
-SUM(CASE WHEN i.invoiceStatus = 0 THEN i.remainingAmount END) OVER (PARTITION BY o.id, i.id, i.subscriptionId, DATE_FORMAT(i.periodEnd,"%Y-%m")) as KalanTutar
+SH.terminalId,
+SH.subscriptionId,
+t.serial_no
 FROM subscription.Invoice i
-LEFT JOIN subscription.SubscriptionHistory sh ON sh.subscriptionId = i.subscriptionId
-LEFT JOIN odeal.Terminal t ON t.id = sh.terminalId AND t.subscription_id = sh.subscriptionId
-JOIN odeal.Organisation o ON o.id = t.organisation_id AND o.demo = 0
-WHERE sh.terminalId IS NOT NULL
-GROUP BY DATE_FORMAT(i.periodEnd,"%Y-%m"), i.subscriptionId, sh.terminalId, i.invoiceStatus, i.id, t.id) as Fatura WHERE Fatura.organisationId = 301000162;
+LEFT JOIN (SELECT * FROM subscription.SubscriptionHistory sh WHERE sh.id IN (
+SELECT MAX(sh1.id) FROM subscription.SubscriptionHistory sh1 GROUP BY sh1.terminalId)) as SH ON SH.subscriptionId = i.subscriptionId
+LEFT JOIN odeal.Terminal t ON t.id = SH.terminalId AND t.subscription_id = SH.subscriptionId
+LEFT JOIN odeal.Organisation o ON o.id = t.organisation_id AND o.demo = 0
+WHERE SH.terminalId IS NOT NULL AND o.id = 301000162
+GROUP BY DATE_FORMAT(i.periodEnd,"%Y-%m"), i.subscriptionId, SH.terminalId, i.invoiceStatus, i.id, t.id) as Fatura WHERE Fatura.organisationId = 301000162;
 
 
 SELECT DISTINCT i.subscriptionId as FaturaAbonelik,
@@ -291,16 +284,25 @@ JOIN odeal.Organisation o ON o.id = t.organisation_id AND o.demo = 0
 WHERE sh.terminalId IS NOT NULL AND o.id = 301000162
 GROUP BY DATE_FORMAT(i.periodEnd,"%Y-%m"), i.subscriptionId, sh.terminalId, i.invoiceStatus, i.id
 
-SELECT o.id, t.serial_no,i.id, i.subscriptionId
+SELECT * FROM subscription.SubscriptionHistory sh GROUP BY sh.terminalId
+
+SELECT *
 FROM subscription.Invoice i
 LEFT JOIN (SELECT * FROM subscription.SubscriptionHistory sh WHERE sh.id IN (
-SELECT MAX(sh1.id) FROM subscription.SubscriptionHistory sh1  WHERE sh1.terminalId = 116513 GROUP BY sh1.subscriptionId)) as SH ON SH.subscriptionId = i.subscriptionId
+SELECT MAX(sh1.id) FROM subscription.SubscriptionHistory sh1 GROUP BY sh1.subscriptionId)) as SH ON SH.subscriptionId = i.subscriptionId
 LEFT JOIN odeal.Terminal t ON t.id = SH.terminalId
 JOIN odeal.Organisation o ON o.id = t.organisation_id AND o.demo = 0
-WHERE SH.terminalId IS NOT NULL AND o.id = 301000162
+WHERE SH.terminalId IS NOT NULL AND o.id = 301000162;
 
 
-SELECT * FROM subscription.SubscriptionHistory sh WHERE sh.id IN (
-SELECT MAX(sh.id) FROM subscription.SubscriptionHistory sh  WHERE sh.terminalId = 116513 GROUP BY sh.subscriptionId);
+SELECT * FROM subscription.SubscriptionHistory sh
+         LEFT JOIN subscription.Invoice i ON i.subscriptionId = sh.subscriptionId
+         WHERE sh.id IN (
+SELECT MAX(sh.id) FROM subscription.SubscriptionHistory sh GROUP BY sh.subscriptionId) AND i.organisationId = 301000162
 
-SELECT * FROM subscription.SubscriptionHistory sh WHERE sh.terminalId = 116513;
+SELECT * FROM subscription.SubscriptionHistory sh WHERE sh.terminalId IN ()
+
+SELECT i.subscriptionId, SH.subscriptionId, COUNT(*) FROM subscription.Invoice i
+                                  LEFT JOIN (SELECT * FROM subscription.SubscriptionHistory sh WHERE sh.id IN (
+SELECT MAX(sh1.id) FROM subscription.SubscriptionHistory sh1 GROUP BY sh1.subscriptionId)) as SH ON SH.subscriptionId = i.subscriptionId
+                                  WHERE i.organisationId = 301000162 GROUP BY i.subscriptionId
