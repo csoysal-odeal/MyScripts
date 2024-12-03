@@ -767,30 +767,6 @@ WHERE t.firstActivationDate >= "2024-09-01 00:00:00" AND t.firstActivationDate <
 
 -- CeptePos Adetler
 
-SELECT "2024-07" as Ay, CeptePos.AdetEOP, CepteposAyniAy.Adet FROM (
-SELECT "2024-07" as Ay, COUNT(*) as AdetEOP FROM (SELECT o.id, COUNT(o.id) as CeptePosAdet FROM odeal.Organisation o
-JOIN subscription.Subscription s ON s.organisationId = o.id AND o.demo = 0
-JOIN subscription.Plan p ON p.id = s.planId
-WHERE p.serviceId = 3 AND s.activationDate <= "2024-07-31 23:59:59" AND  (s.cancelledAt IS NULL OR s.cancelledAt > "2024-07-31 23:59:59")
-GROUP BY o.id) as T1) as CeptePos
-LEFT JOIN (SELECT "2024-07" as Ay, COUNT(*) as Adet FROM (SELECT o.id, COUNT(o.id) as CeptePosAdet FROM odeal.Organisation o
-JOIN subscription.Subscription s ON s.organisationId = o.id AND o.demo = 0
-JOIN subscription.Plan p ON p.id = s.planId
-WHERE p.serviceId = 3 AND s.activationDate <= "2024-07-31 23:59:59" AND  (s.cancelledAt IS NULL OR s.cancelledAt > "2024-06-30 23:59:59")
-GROUP BY o.id) as CeptePosAbonelik) as CepteposAyniAy ON CepteposAyniAy.Ay = CeptePos.Ay
-UNION
-SELECT "2024-08" as Ay, CeptePos.AdetEOP, CepteposAyniAy.Adet FROM (
-SELECT "2024-08" as Ay, COUNT(*) as AdetEOP FROM (SELECT o.id, COUNT(o.id) as CeptePosAdet FROM odeal.Organisation o
-JOIN subscription.Subscription s ON s.organisationId = o.id AND o.demo = 0
-JOIN subscription.Plan p ON p.id = s.planId
-WHERE p.serviceId = 3 AND s.activationDate <= "2024-08-31 23:59:59" AND  (s.cancelledAt IS NULL OR s.cancelledAt > "2024-08-31 23:59:59")
-GROUP BY o.id) as T1) as CeptePos
-LEFT JOIN (SELECT "2024-08" as Ay, COUNT(*) as Adet FROM (SELECT o.id, COUNT(o.id) as CeptePosAdet FROM odeal.Organisation o
-JOIN subscription.Subscription s ON s.organisationId = o.id AND o.demo = 0
-JOIN subscription.Plan p ON p.id = s.planId
-WHERE p.serviceId = 3 AND s.activationDate <= "2024-08-31 23:59:59" AND  (s.cancelledAt IS NULL OR s.cancelledAt > "2024-07-31 23:59:59")
-GROUP BY o.id) as CeptePosAbonelik) as CepteposAyniAy ON CepteposAyniAy.Ay = CeptePos.Ay
-UNION
 SELECT "2024-09" as Ay, CeptePos.AdetEOP, CepteposAyniAy.Adet FROM (
 SELECT "2024-09" as Ay, COUNT(*) as AdetEOP FROM (SELECT o.id, COUNT(o.id) as CeptePosAdet FROM odeal.Organisation o
 JOIN subscription.Subscription s ON s.organisationId = o.id AND o.demo = 0
@@ -814,6 +790,18 @@ JOIN subscription.Subscription s ON s.organisationId = o.id AND o.demo = 0
 JOIN subscription.Plan p ON p.id = s.planId
 WHERE p.serviceId = 3 AND s.activationDate <= "2024-10-31 23:59:59" AND  (s.cancelledAt IS NULL OR s.cancelledAt > "2024-09-30 23:59:59")
 GROUP BY o.id) as CeptePosAbonelik) as CepteposAyniAy ON CepteposAyniAy.Ay = CeptePos.Ay
+UNION
+SELECT "2024-11" as Ay, CeptePos.AdetEOP, CepteposAyniAy.Adet FROM (
+SELECT "2024-11" as Ay, COUNT(*) as AdetEOP FROM (SELECT o.id, COUNT(o.id) as CeptePosAdet FROM odeal.Organisation o
+JOIN subscription.Subscription s ON s.organisationId = o.id AND o.demo = 0
+JOIN subscription.Plan p ON p.id = s.planId
+WHERE p.serviceId = 3 AND s.activationDate <= "2024-11-30 23:59:59" AND  (s.cancelledAt IS NULL OR s.cancelledAt > "2024-11-30 23:59:59")
+GROUP BY o.id) as T1) as CeptePos
+LEFT JOIN (SELECT "2024-11" as Ay, COUNT(*) as Adet FROM (SELECT o.id, COUNT(o.id) as CeptePosAdet FROM odeal.Organisation o
+JOIN subscription.Subscription s ON s.organisationId = o.id AND o.demo = 0
+JOIN subscription.Plan p ON p.id = s.planId
+WHERE p.serviceId = 3 AND s.activationDate <= "2024-11-30 23:59:59" AND  (s.cancelledAt IS NULL OR s.cancelledAt > "2024-10-31 23:59:59")
+GROUP BY o.id) as CeptePosAbonelik) as CepteposAyniAy ON CepteposAyniAy.Ay = CeptePos.Ay
 
 
 
@@ -822,7 +810,8 @@ GROUP BY o.id) as CeptePosAbonelik) as CepteposAyniAy ON CepteposAyniAy.Ay = Cep
 SELECT "2023-01"  as Ay, COUNT(*) as Adet FROM odeal.Terminal t
 JOIN subscription.Subscription s ON s.id = t.subscription_id
 JOIN odeal.Organisation o ON o.id = t.organisation_id AND o.demo = 0
-WHERE t.firstActivationDate >= "2023-01-01 00:00:00" AND t.firstActivationDate <= "2023-01-31 23:59:59" AND (s.cancelledAt IS NULL OR s.cancelledAt > "2022-12-31 23:59:59")
+WHERE t.firstActivationDate >= "2023-01-01 00:00:00"
+  AND t.firstActivationDate <= "2023-01-31 23:59:59" AND (s.cancelledAt IS NULL OR s.cancelledAt > "2022-12-31 23:59:59")
 UNION
 SELECT "2023-02"  as Ay, COUNT(*) as Adet FROM odeal.Terminal t
 JOIN subscription.Subscription s ON s.id = t.subscription_id
@@ -910,7 +899,7 @@ JOIN odeal.Organisation o ON o.id = t.organisation_id AND o.demo = 0
 WHERE t.firstActivationDate >= "2024-06-01 00:00:00" AND t.firstActivationDate <= "2024-06-30 23:59:59" AND (s.cancelledAt IS NULL OR s.cancelledAt > "2024-05-31 23:59:59")
 
 
--- EOP Aktif
+-- EOP Aktif Geniş Zaman
 SELECT EndOfPeriodTerminalAdet.Ay, EndOfPeriodTerminalAdet.Adet as EODTerminalAdet, TerminalAdet.TerminalAdet FROM (
 SELECT "2023-01"  as Ay, COUNT(*) as Adet FROM odeal.Terminal t
 JOIN subscription.Subscription s ON s.id = t.subscription_id
@@ -1094,6 +1083,9 @@ JOIN odeal.Organisation o ON o.id = t.organisation_id AND o.demo = 0
 WHERE t.firstActivationDate <= "2024-06-30 23:59:59" AND (s.cancelledAt IS NULL OR s.cancelledAt > "2024-05-31 23:59:59")
 ) as TerminalAdet) as TerminalAdet ON TerminalAdet.Ay = EndOfPeriodTerminalAdet.Ay
 
+
+
+-- Aylık Aktivasyon Adetleri EOP
 SELECT EndOfPeriodTerminalAdet.Ay, EndOfPeriodTerminalAdet.Adet as EODTerminalAdet, TerminalAdet.TerminalAdet FROM (
 SELECT "2024-08"  as Ay, COUNT(*) as Adet FROM odeal.Terminal t
 JOIN subscription.Subscription s ON s.id = t.subscription_id
@@ -1109,6 +1101,11 @@ SELECT "2024-10"  as Ay, COUNT(*) as Adet FROM odeal.Terminal t
 JOIN subscription.Subscription s ON s.id = t.subscription_id
 JOIN odeal.Organisation o ON o.id = t.organisation_id AND o.demo = 0
 WHERE t.firstActivationDate <= "2024-10-31 23:59:59" AND (s.cancelledAt IS NULL OR s.cancelledAt > "2024-10-31 23:59:59")
+UNION
+SELECT "2024-11"  as Ay, COUNT(*) as Adet FROM odeal.Terminal t
+JOIN subscription.Subscription s ON s.id = t.subscription_id
+JOIN odeal.Organisation o ON o.id = t.organisation_id AND o.demo = 0
+WHERE t.firstActivationDate <= "2024-11-30 23:59:59" AND (s.cancelledAt IS NULL OR s.cancelledAt > "2024-11-30 23:59:59")
 ) as EndOfPeriodTerminalAdet
 LEFT JOIN (SELECT TerminalAdet.Ay, TerminalAdet.Adet as TerminalAdet FROM (
 SELECT "2024-08"  as Ay, COUNT(*) as Adet FROM odeal.Terminal t
@@ -1125,26 +1122,47 @@ SELECT "2024-10"  as Ay, COUNT(*) as Adet FROM odeal.Terminal t
 JOIN subscription.Subscription s ON s.id = t.subscription_id
 JOIN odeal.Organisation o ON o.id = t.organisation_id AND o.demo = 0
 WHERE t.firstActivationDate <= "2024-10-31 23:59:59" AND (s.cancelledAt IS NULL OR s.cancelledAt > "2024-09-30 23:59:59")
-) as TerminalAdet) as TerminalAdet ON TerminalAdet.Ay = EndOfPeriodTerminalAdet.Ay
+UNION
+SELECT "2024-11"  as Ay, COUNT(*) as Adet FROM odeal.Terminal t
+JOIN subscription.Subscription s ON s.id = t.subscription_id
+JOIN odeal.Organisation o ON o.id = t.organisation_id AND o.demo = 0
+WHERE t.firstActivationDate <= "2024-11-30 23:59:59" AND (s.cancelledAt IS NULL OR s.cancelledAt > "2024-10-31 23:59:59")
+) as TerminalAdet) as TerminalAdet ON TerminalAdet.Ay = EndOfPeriodTerminalAdet.Ay;
 
+-- Aylık Fiziki Cihaz (Ay İçinde İptaller Dahil)
+SELECT "2024-09"  as Ay, COUNT(*) as Adet FROM odeal.Terminal t
+JOIN subscription.Subscription s ON s.id = t.subscription_id
+JOIN odeal.Organisation o ON o.id = t.organisation_id AND o.demo = 0
+WHERE t.firstActivationDate >= "2024-09-01 00:00:00" AND t.firstActivationDate <= "2024-09-30 23:59:59" AND (s.cancelledAt IS NULL OR s.cancelledAt > "2024-08-31 23:59:59")
+UNION
+SELECT "2024-10"  as Ay, COUNT(*) as Adet FROM odeal.Terminal t
+JOIN subscription.Subscription s ON s.id = t.subscription_id
+JOIN odeal.Organisation o ON o.id = t.organisation_id AND o.demo = 0
+WHERE t.firstActivationDate >= "2024-10-01 00:00:00" AND t.firstActivationDate <= "2024-10-31 23:59:59" AND (s.cancelledAt IS NULL OR s.cancelledAt > "2024-09-30 23:59:59")
+UNION
+SELECT "2024-11"  as Ay, COUNT(*) as Adet FROM odeal.Terminal t
+JOIN subscription.Subscription s ON s.id = t.subscription_id
+JOIN odeal.Organisation o ON o.id = t.organisation_id AND o.demo = 0
+WHERE t.firstActivationDate >= "2024-11-01 00:00:00" AND t.firstActivationDate <= "2024-11-30 23:59:59" AND (s.cancelledAt IS NULL OR s.cancelledAt > "2024-10-31 23:59:59");
+
+-- Aylık Fiziki Cihaz (Ay İçinde İptaller Hariç)
+SELECT "2024-09"  as Ay, COUNT(*) as Adet FROM odeal.Terminal t
+JOIN subscription.Subscription s ON s.id = t.subscription_id
+JOIN odeal.Organisation o ON o.id = t.organisation_id AND o.demo = 0
+WHERE t.firstActivationDate >= "2024-09-01 00:00:00" AND t.firstActivationDate <= "2024-09-30 23:59:59" AND (s.cancelledAt IS NULL OR s.cancelledAt > "2024-09-30 23:59:59")
+UNION
+SELECT "2024-10"  as Ay, COUNT(*) as Adet FROM odeal.Terminal t
+JOIN subscription.Subscription s ON s.id = t.subscription_id
+JOIN odeal.Organisation o ON o.id = t.organisation_id AND o.demo = 0
+WHERE t.firstActivationDate >= "2024-10-01 00:00:00" AND t.firstActivationDate <= "2024-10-31 23:59:59" AND (s.cancelledAt IS NULL OR s.cancelledAt > "2024-10-31 23:59:59")
+UNION
+SELECT "2024-11"  as Ay, COUNT(*) as Adet FROM odeal.Terminal t
+JOIN subscription.Subscription s ON s.id = t.subscription_id
+JOIN odeal.Organisation o ON o.id = t.organisation_id AND o.demo = 0
+WHERE t.firstActivationDate >= "2024-11-01 00:00:00" AND t.firstActivationDate <= "2024-11-30 23:59:59" AND (s.cancelledAt IS NULL OR s.cancelledAt > "2024-11-30 23:59:59");
 
 
 -- Fiziki İptal
-SELECT "2024-04" as Ay, COUNT(t.id) as FizikiIptal FROM odeal.Terminal t
-JOIN subscription.Subscription s ON s.id = t.subscription_id
-JOIN subscription.Plan p ON p.id = s.planId AND p.serviceId <> 3
-WHERE t.firstActivationDate <= "2024-04-30 23:59:59" AND s.status <>1 AND t.terminalStatus = 0 AND (s.cancelledAt >= "2024-04-01 00:00:00" AND s.cancelledAt <="2024-04-30 23:59:59")
-UNION
-SELECT "2024-05" as Ay, COUNT(t.id) as FizikiIptal FROM odeal.Terminal t
-JOIN subscription.Subscription s ON s.id = t.subscription_id
-JOIN subscription.Plan p ON p.id = s.planId AND p.serviceId <> 3
-WHERE t.firstActivationDate <= "2024-05-31 23:59:59" AND s.status <>1 AND t.terminalStatus = 0 AND (s.cancelledAt >= "2024-05-01 00:00:00" AND s.cancelledAt <="2024-05-31 23:59:59")
-UNION
-SELECT "2024-06" as Ay, COUNT(t.id) as FizikiIptal FROM odeal.Terminal t
-JOIN subscription.Subscription s ON s.id = t.subscription_id
-JOIN subscription.Plan p ON p.id = s.planId AND p.serviceId <> 3
-WHERE t.firstActivationDate <= "2024-06-30 23:59:59" AND s.status <>1 AND t.terminalStatus = 0 AND (s.cancelledAt >= "2024-06-01 00:00:00" AND s.cancelledAt <="2024-06-30 23:59:59")
-UNION
 SELECT "2024-07" as Ay, COUNT(t.id) as FizikiIptal FROM odeal.Terminal t
 JOIN subscription.Subscription s ON s.id = t.subscription_id
 JOIN subscription.Plan p ON p.id = s.planId AND p.serviceId <> 3
@@ -1161,45 +1179,67 @@ JOIN subscription.Subscription s ON s.id = t.subscription_id
 JOIN subscription.Plan p ON p.id = s.planId AND p.serviceId <> 3
 WHERE t.firstActivationDate <= "2024-09-30 23:59:59" AND s.status <>1
   AND t.terminalStatus = 0 AND (s.cancelledAt >= "2024-09-01 00:00:00" AND s.cancelledAt <="2024-09-30 23:59:59")
+UNION
+SELECT "2024-10" as Ay, COUNT(t.id) as FizikiIptal FROM odeal.Terminal t
+JOIN subscription.Subscription s ON s.id = t.subscription_id
+JOIN subscription.Plan p ON p.id = s.planId AND p.serviceId <> 3
+WHERE t.firstActivationDate <= "2024-10-31 23:59:59" AND s.status <>1
+  AND t.terminalStatus = 0 AND (s.cancelledAt >= "2024-10-01 00:00:00" AND s.cancelledAt <="2024-10-31 23:59:59")
+UNION
+SELECT "2024-11" as Ay, COUNT(t.id) as FizikiIptal FROM odeal.Terminal t
+JOIN subscription.Subscription s ON s.id = t.subscription_id
+JOIN subscription.Plan p ON p.id = s.planId AND p.serviceId <> 3
+WHERE t.firstActivationDate <= "2024-11-30 23:59:59" AND s.status <>1
+  AND t.terminalStatus = 0 AND (s.cancelledAt >= "2024-11-01 00:00:00" AND s.cancelledAt <="2024-11-30 23:59:59");
+
 
 
 
 -- İşlem Geçen Fiziki Terminal
-SELECT "2024-04"  as Ay, COUNT(IslemGecen.serial_no) as Adet, SUM(IslemGecen.Ciro) as Ciro FROM (SELECT t.serial_no, SUM(bp.amount) as Ciro FROM odeal.BasePayment bp
-JOIN odeal.TerminalPayment tp ON tp.id = bp.id
-JOIN odeal.Terminal t ON t.id = tp.terminal_id
-WHERE bp.currentStatus = 6 AND bp.amount > 1 AND bp.signedDate >= "2024-04-01 00:00:00" AND bp.signedDate <= "2024-04-30 23:59:59"
-GROUP BY t.serial_no) as IslemGecen
-UNION
-SELECT "2024-05"  as Ay, COUNT(IslemGecen.serial_no) as Adet, SUM(IslemGecen.Ciro) as Ciro FROM (SELECT t.serial_no, SUM(bp.amount) as Ciro FROM odeal.BasePayment bp
-JOIN odeal.TerminalPayment tp ON tp.id = bp.id
-JOIN odeal.Terminal t ON t.id = tp.terminal_id
-WHERE bp.currentStatus = 6 AND bp.amount > 1 AND bp.signedDate >= "2024-05-01 00:00:00" AND bp.signedDate <= "2024-05-31 23:59:59"
-GROUP BY t.serial_no) as IslemGecen
-UNION
-SELECT "2024-06"  as Ay, COUNT(IslemGecen.serial_no) as Adet, SUM(IslemGecen.Ciro) as Ciro FROM (SELECT t.serial_no, SUM(bp.amount) as Ciro FROM odeal.BasePayment bp
-JOIN odeal.TerminalPayment tp ON tp.id = bp.id
-JOIN odeal.Terminal t ON t.id = tp.terminal_id
-WHERE bp.currentStatus = 6 AND bp.amount > 1 AND bp.signedDate >= "2024-06-01 00:00:00" AND bp.signedDate <= "2024-06-30 23:59:59"
-GROUP BY t.serial_no) as IslemGecen
-UNION
-SELECT "2024-07"  as Ay, COUNT(IslemGecen.serial_no) as Adet, SUM(IslemGecen.Ciro) as Ciro FROM (SELECT t.serial_no, SUM(bp.amount) as Ciro FROM odeal.BasePayment bp
-JOIN odeal.TerminalPayment tp ON tp.id = bp.id
-JOIN odeal.Terminal t ON t.id = tp.terminal_id
-WHERE bp.currentStatus = 6 AND bp.amount > 1 AND bp.signedDate >= "2024-07-01 00:00:00" AND bp.signedDate <= "2024-07-31 23:59:59"
-GROUP BY t.serial_no) as IslemGecen
-UNION
-SELECT "2024-08"  as Ay, COUNT(IslemGecen.serial_no) as Adet, SUM(IslemGecen.Ciro) as Ciro FROM (SELECT t.serial_no, SUM(bp.amount) as Ciro FROM odeal.BasePayment bp
-JOIN odeal.TerminalPayment tp ON tp.id = bp.id
-JOIN odeal.Terminal t ON t.id = tp.terminal_id
-WHERE bp.currentStatus = 6 AND bp.amount > 1 AND bp.signedDate >= "2024-08-01 00:00:00" AND bp.signedDate <= "2024-08-31 23:59:59"
-GROUP BY t.serial_no) as IslemGecen
-UNION
 SELECT "2024-09"  as Ay, COUNT(IslemGecen.serial_no) as Adet, SUM(IslemGecen.Ciro) as Ciro FROM (SELECT t.serial_no, SUM(bp.amount) as Ciro FROM odeal.BasePayment bp
 JOIN odeal.TerminalPayment tp ON tp.id = bp.id
 JOIN odeal.Terminal t ON t.id = tp.terminal_id
 WHERE bp.currentStatus = 6 AND bp.amount > 1 AND bp.signedDate >= "2024-09-01 00:00:00" AND bp.signedDate <= "2024-09-30 23:59:59"
-GROUP BY t.serial_no) as IslemGecen;
+GROUP BY t.serial_no) as IslemGecen
+UNION
+SELECT "2024-10"  as Ay, COUNT(IslemGecen.serial_no) as Adet, SUM(IslemGecen.Ciro) as Ciro FROM (SELECT t.serial_no, SUM(bp.amount) as Ciro FROM odeal.BasePayment bp
+JOIN odeal.TerminalPayment tp ON tp.id = bp.id
+JOIN odeal.Terminal t ON t.id = tp.terminal_id
+WHERE bp.currentStatus = 6 AND bp.amount > 1 AND bp.signedDate >= "2024-10-01 00:00:00" AND bp.signedDate <= "2024-10-31 23:59:59"
+GROUP BY t.serial_no) as IslemGecen
+UNION
+SELECT "2024-11"  as Ay, COUNT(IslemGecen.serial_no) as Adet, SUM(IslemGecen.Ciro) as Ciro FROM (SELECT t.serial_no, SUM(bp.amount) as Ciro FROM odeal.BasePayment bp
+JOIN odeal.TerminalPayment tp ON tp.id = bp.id
+JOIN odeal.Terminal t ON t.id = tp.terminal_id
+WHERE bp.currentStatus = 6 AND bp.amount > 1 AND bp.signedDate >= "2024-11-01 00:00:00" AND bp.signedDate <= "2024-11-30 23:59:59"
+GROUP BY t.serial_no) as IslemGecen
+
+
+SELECT
+   AylikTaksidePosAdet.Ay,
+   AylikTaksidePosAdet.Adet,
+   (@kumulatifToplam := @kumulatifToplam + AylikTaksidePosAdet.Adet) AS KumulatifToplam
+FROM
+   (SELECT
+       DATE_FORMAT(t.`date`,'%Y-%m') AS Ay,
+       SUM(t.aktivasyon) AS Adet
+    FROM  dataminer.taksidepos t
+    GROUP  BY Ay
+    ) AS AylikTaksidePosAdet
+    JOIN (SELECT @kumulatifToplam:=0) r
+    ORDER BY Ay
+
+SELECT t.id, t.serial_no, t.firstActivationDate, t.terminalStatus, t.bankInfoId, bi.bank, bi.iban, bi.organisationId, bi.id FROM odeal.Terminal t
+                                                                                LEFT JOIN odeal.BankInfo bi ON bi.id = t.bankInfoId
+                                                                                WHERE t.serial_no = "BCJ00071061"
+
+SELECT t.id, t.serial_no, t.firstActivationDate, t.terminalStatus, t.bankInfoId, bi.bank, bi.iban, bi.organisationId, bi.id, bi.createdAt, bi._createdDate, bi.status FROM odeal.Terminal t
+                                                                                LEFT JOIN odeal.BankInfo bi ON bi.id = t.bankInfoId
+                                                                                WHERE t.organisation_id =301194182;
+
+SELECT bi.id, bi.organisationId, bi.status FROM odeal.BankInfo bi WHERE bi.organisationId = 301194182;
+
+SELECT * FROM odeal.TerminalHistory th WHERE th.serialNo = "PAX710018020"
 
 
 SELECT

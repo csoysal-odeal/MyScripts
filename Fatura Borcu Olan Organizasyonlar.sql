@@ -294,6 +294,7 @@ LEFT JOIN odeal.Terminal t ON t.id = SH.terminalId
 JOIN odeal.Organisation o ON o.id = t.organisation_id AND o.demo = 0
 WHERE SH.terminalId IS NOT NULL AND o.id = 301000162;
 
+SELECT o.id, IF(o.isActivated=1,"Aktif","Pasif") as UyeDurum FROM odeal.Organisation o
 
 SELECT * FROM subscription.SubscriptionHistory sh
          LEFT JOIN subscription.Invoice i ON i.subscriptionId = sh.subscriptionId

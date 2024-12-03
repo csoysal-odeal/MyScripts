@@ -4,6 +4,10 @@ SELECT os.odeal_satis_id, os.organisation_id, os.mali_no,
 SELECT ot.organisation_id, ot.serial_no, ot.ilk_kurulum_tarihi, ot.first_activation_date
 FROM odeal_terminal ot WHERE ot.serial_no = "PAX710031815";
 
+SELECT ca.odeal_id as UyeIsyeriID, ca.organisation_id, ca.status, IF(ca.is_activated=1,"Aktif","Pasif") as UyeDurum, ca.account_status, fd.label FROM crm_account ca
+LEFT JOIN field_data fd ON fd.field_data_id = ca.account_status AND fd.os_app_id ="crm" AND fd.os_model_id = "account" AND fd.field_id = "account_status"
+;
+
 
 SELECT ae.act_event_id as ZiyaretID, ae.subject as Aciklama,
        ae.cep_telefonu as CepTelefon,
