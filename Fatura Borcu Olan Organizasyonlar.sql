@@ -287,7 +287,7 @@ GROUP BY DATE_FORMAT(i.periodEnd,"%Y-%m"), i.subscriptionId, sh.terminalId, i.in
 SELECT * FROM subscription.SubscriptionHistory sh GROUP BY sh.terminalId
 
 SELECT * FROM (
-SELECT t.serial_no as MaliNo, t.id as TerminalID, i.id as FaturaID,  i.subscriptionId as AbonelikID, i.organisationId as UyeIsyeriID, DATE_FORMAT(i.periodEnd,"%Y-%m") as Donem, i.periodStart, i.periodEnd, i.receiver, i.totalAmount as FaturaBedeli, i.totalVat as Vergi, i.remainingAmount as Bakiye,  CASE WHEN i.invoiceStatus=0 THEN "ÖDENMEDİ"
+SELECT t.serial_no as MaliNo, o.vergiNo, m.tckNo, IF(t.terminalStatus=1,"Aktif","Pasif") as TerminalDurum, IF(o.isActivated=1,"Aktif","Pasif") as UyeDurum, t.id as TerminalID, i.id as FaturaID,  i.subscriptionId as AbonelikID, i.organisationId as UyeIsyeriID, DATE_FORMAT(i.periodEnd,"%Y-%m") as Donem, i.periodStart, i.periodEnd, i.receiver, i.totalAmount as FaturaBedeli, i.totalVat as Vergi, i.remainingAmount as Bakiye,  CASE WHEN i.invoiceStatus=0 THEN "ÖDENMEDİ"
     WHEN i.invoiceStatus=1 THEN "ÖDENDİ"
     WHEN i.invoiceStatus=2 THEN "ÖDENMEYECEK"
     WHEN i.invoiceStatus=3 THEN "HUKUKİ SÜREÇTE"
@@ -297,6 +297,7 @@ LEFT JOIN (SELECT * FROM subscription.SubscriptionHistory sh WHERE sh.id IN (
 SELECT MAX(sh1.id) FROM subscription.SubscriptionHistory sh1 GROUP BY sh1.subscriptionId)) as SH ON SH.subscriptionId = i.subscriptionId
 LEFT JOIN odeal.Terminal t ON t.id = SH.terminalId
 JOIN odeal.Organisation o ON o.id = t.organisation_id AND o.demo = 0
+LEFT JOIN odeal.Merchant m ON m.organisationId = o.id AND m.role = 0
 WHERE SH.terminalId IS NOT NULL AND o.id = 301000162) as Fatura;
 
 SELECT o.id, IF(o.isActivated=1,"Aktif","Pasif") as UyeDurum FROM odeal.Organisation o
