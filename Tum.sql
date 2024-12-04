@@ -252,17 +252,8 @@ WHERE Fatura.organisationId = 301000162
 
 SELECT * FROM information_schema.COLUMNS c WHERE c.COLUMN_NAME LIKE "%reasoncode%"
 
-select oo.id,me.identifier_no 'userId' , oo.unvan 'formattedName' , m.firstName 'givenName' , '' middleName,
-       m.LastName 'familyName', m.phone 'phone', m.email 'email', 'TÜRKİYE' as 'country' , c.name 'city', t.name 'county', me.created_date 'contractDate',
-       tx.code 'taxOfficeId',me.`type` , me.envelope_status, me.envelope_description
-from odeal.MerchantEnvelopeHistory me
-join odeal.Organisation oo on me.merchant_id  = oo.id
-join odeal.Merchant m on m.organisationId = oo.id and m.role = 0
-left join odeal.TaxOffice tx on tx.id  = oo.taxOfficeId
-left join odeal.Town t on t.id = oo.townId
-left join odeal.City c on c.id = oo.cityId
-where 1=1
-    and date(created_date) >= '2022-04-01'
-order by merchant_id;
+SELECT WOL2.id, WOL2.SerialNumber, WOL2.Status, WOL2.CreatedDate, WOL2.WorkOrderNo, WOL2.WorkOrderType, WOL2.FieldService, WOL2.Metadata FROM (
+SELECT *, ROW_NUMBER() OVER (PARTITION BY wol.SerialNumber, wol.WorkOrderNo, wol.Status, wol.WorkOrderType ORDER BY wol.id DESC) as Sira
+FROM stargate.WorkOrderLog wol WHERE wol.SerialNumber = "PAX710011988") as WOL2 WHERE WOL2.Sira = 1 ORDER BY WOL2.CreatedDate;
 
-SELECT * FROM odeal.EInvoice ei WHERE ei.created_date >= "2024-11-25 00:00:00" ORDER BY ei.created_date DESC LIMIT 10
+SELECT * FROM odeal.MerchantEnvelopeHistory meh

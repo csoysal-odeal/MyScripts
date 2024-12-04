@@ -300,6 +300,8 @@ AND Kurulumlar.SatisID IN (SELECT MAX(os.odeal_satis_id) FROM odeal_satis os GRO
 
 SELECT * FROM crm_account ca WHERE ca.tax_number = 2050064291
 
+SELECT ot.organisation_id, ot.serial_no, ot.first_bank_activation_date FROM odeal_terminal ot
+
 SELECT * FROM field_data fd WHERE fd.os_app_id = "odeal" AND fd.os_model_id = "satis";
 
 SELECT * FROM information_schema.COLUMNS c WHERE c.COLUMN_NAME LIKE "%lead%"
