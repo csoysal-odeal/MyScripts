@@ -270,3 +270,44 @@ FROM odeal.Organisation o
                 JOIN odeal.Town t ON t.id = o.townId
                 WHERE o.activatedAt >= "2018-01-01 00:00:00" AND o.activatedAt <= "2020-12-31 23:59:59" AND o.isActivated = 1 AND c.id = 34
 GROUP BY o.id, o.unvan, c.name, IF(o.isActivated=1,"Aktif","Pasif"), o.activatedAt, o.deActivatedAt
+
+ SELECT Seker2Fiba.organisationId, Seker2Fiba.TeslimTar,
+       SUM(CASE WHEN Seker2Fiba.Flag = 1 THEN Seker2Fiba.Tutar END) as SekerliCiro,
+       SUM(CASE WHEN Seker2Fiba.Flag = 0 THEN Seker2Fiba.Tutar END) as FibaliCiro,
+       SUM(CASE WHEN Seker2Fiba.Flag = 1 THEN Seker2Fiba.IslemAdet END) as SekerliIslem,
+       SUM(CASE WHEN Seker2Fiba.Flag = 0 THEN Seker2Fiba.IslemAdet END) as FibaliIslem,
+       COUNT(CASE WHEN Seker2Fiba.Flag = 1 THEN Seker2Fiba.Gun END) as SekerliIslemGunu,
+       COUNT(CASE WHEN Seker2Fiba.Flag = 0 THEN Seker2Fiba.Gun END) as FibaliIslemGunu
+FROM (
+SELECT Planlar2.terminalId, Planlar2.name, bp.organisationId, SUM(bp.amount) as Tutar, COUNT(bp.id) as IslemAdet, Planlar2.Flag,
+       DATE_FORMAT(bp.signedDate,'%Y-%m-%d') as Gun, MAX(Planlar2.TeslimTarihi) as TeslimTar FROM (
+SELECT Planlar.*,
+           IFNULL(LEAD(Planlar.IlkTarih) OVER (PARTITION BY Planlar.terminalId, Planlar.subscriptionId ORDER BY Planlar.IlkTarih),now()) as SonrakiTarih,
+       IF(Planlar.name LIKE '%SEKERCARD%', 1, IF(Planlar.name LIKE '%Ödealkart%' OR Planlar.name LIKE '%FIBACARD%', 0, 2)) AS Flag
+FROM (
+SELECT sh.terminalId,
+       sh.subscriptionId,
+       p.id,
+       p.name,
+       MIN(sh._createdDate) as IlkTarih,
+       MAX(sh._createdDate) as SonTarih,
+       KartTeslim2.TeslimTarihi
+FROM subscription.SubscriptionHistory sh
+LEFT JOIN subscription.Plan p ON p.id = sh.planId
+LEFT JOIN (SELECT KartTeslim.terminal_id, KartTeslim.TeslimTarihi FROM (
+SELECT s.terminal_id,
+       ROW_NUMBER() over (PARTITION BY cch.tckn, cch.card_number, s.terminal_id ORDER BY cch.courier_date DESC) AS Sira,
+       STR_TO_DATE(IF((LAST_VALUE(cch.courier_main_status) OVER (PARTITION BY cch.tckn, cch.card_number, s.terminal_id ORDER BY cch.courier_date DESC)) = "Teslim", DATE_FORMAT((LAST_VALUE(cch.courier_date) OVER (PARTITION BY cch.tckn, cch.card_number, s.terminal_id ORDER BY cch.courier_date DESC)),"%Y-%m-%d %H:%i:%s"),null),"%Y-%m-%d %H:%i:%s") AS TeslimTarihi
+FROM payout_source.card_courier_history cch
+         JOIN payout_source.source s ON s.tckn = cch.tckn AND s.account_no = cch.card_number
+WHERE s.type = 'FIBACARD') as KartTeslim
+WHERE KartTeslim.Sira = 1 AND KartTeslim.TeslimTarihi IS NOT NULL) as KartTeslim2 ON KartTeslim2.terminal_id = sh.terminalId
+WHERE sh._createdDate >= '2024-09-01 00:00:00'
+GROUP BY sh.terminalId, sh.subscriptionId, p.id, p.name, KartTeslim2.terminal_id, KartTeslim2.TeslimTarihi) AS Planlar) AS Planlar2
+LEFT JOIN odeal.TerminalPayment tp ON tp.terminal_id = Planlar2.terminalId
+JOIN odeal.BasePayment bp ON bp.id = tp.id
+WHERE bp.currentStatus = 6 AND bp.paymentType IN (0,1,2,3,6,7,8)
+AND bp.signedDate BETWEEN Planlar2.IlkTarih AND Planlar2.SonrakiTarih
+GROUP BY Planlar2.terminalId, Planlar2.name, bp.organisationId, Planlar2.Flag, DATE_FORMAT(bp.signedDate,'%Y-%m-%d')) as Seker2Fiba
+WHERE Seker2Fiba.organisationId = 301003386
+GROUP BY Seker2Fiba.organisationId, Seker2Fiba.TeslimTar;

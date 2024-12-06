@@ -320,7 +320,15 @@ GROUP BY DATE_FORMAT(i.periodEnd,"%Y-%m"), CASE WHEN i.invoiceStatus=0 THEN "ÖD
     WHEN i.invoiceStatus=3 THEN "HUKUKİ SÜREÇTE"
     END
 
+SELECT bp.signedDate, bp.subscriptionId, bp.appliedRate, bp.paymentType, bp.currentStatus, bp.paymentFacilitator FROM odeal.BasePayment bp
+                                                                           WHERE bp.currentStatus = 6 AND bp.paymentType <> 4
+                                                                           ORDER BY bp._createdDate DESC LIMIT 10000
 
+SELECT
+    ROW_NUMBER() over (PARTITION BY o.id ORDER BY t.firstActivationDate) as Sira,
+    o.id, o.activatedAt, o.isActivated, o.deActivatedAt, t.serial_no, t.firstActivationDate, t.terminalStatus, t.deactivationDate FROM odeal.Organisation o
+JOIN odeal.Terminal t ON t.organisation_id = o.id
+WHERE o.id = 301196054;
 
 SELECT o.id, IF(o.isActivated=1,"Aktif","Pasif") as UyeDurum FROM odeal.Organisation o
 
