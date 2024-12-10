@@ -311,3 +311,5 @@ AND bp.signedDate BETWEEN Planlar2.IlkTarih AND Planlar2.SonrakiTarih
 GROUP BY Planlar2.terminalId, Planlar2.name, bp.organisationId, Planlar2.Flag, DATE_FORMAT(bp.signedDate,'%Y-%m-%d')) as Seker2Fiba
 WHERE Seker2Fiba.organisationId = 301003386
 GROUP BY Seker2Fiba.organisationId, Seker2Fiba.TeslimTar;
+
+SELECT * FROM odeal.TerminalHistory

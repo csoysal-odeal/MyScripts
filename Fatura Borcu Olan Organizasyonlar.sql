@@ -325,19 +325,14 @@ SELECT bp.signedDate, bp.subscriptionId, bp.appliedRate, bp.paymentType, bp.curr
                                                                            ORDER BY bp._createdDate DESC LIMIT 10000
 
 SELECT
-    ROW_NUMBER() over (PARTITION BY o.id ORDER BY t.firstActivationDate) as Sira,
-    o.id, o.activatedAt, o.isActivated, o.deActivatedAt, t.serial_no, t.firstActivationDate, t.terminalStatus, t.deactivationDate FROM odeal.Organisation o
+ROW_NUMBER() over (PARTITION BY o.id ORDER BY t.firstActivationDate) as Sira,
+o.id, o.activatedAt, o.isActivated, o.deActivatedAt, t.serial_no, t.firstActivationDate, t.terminalStatus, t.deactivationDate FROM odeal.Organisation o
 JOIN odeal.Terminal t ON t.organisation_id = o.id
 WHERE o.id = 301196054;
 
-SELECT o.id, IF(o.isActivated=1,"Aktif","Pasif") as UyeDurum FROM odeal.Organisation o
+SELECT * FROM subscription.Invoice i WHERE i.organisationId = 301000079;
 
-SELECT * FROM subscription.SubscriptionHistory sh
-         LEFT JOIN subscription.Invoice i ON i.subscriptionId = sh.subscriptionId
-         WHERE sh.id IN (
-SELECT MAX(sh.id) FROM subscription.SubscriptionHistory sh GROUP BY sh.subscriptionId) AND i.organisationId = 301000162
-
-SELECT * FROM subscription.SubscriptionHistory sh WHERE sh.terminalId IN ()
+SELECT * FROM subscription.SubscriptionHistory sh WHERE sh.subscriptionId = 27093
 
 SELECT i.subscriptionId, SH.subscriptionId, COUNT(*) FROM subscription.Invoice i
                                   LEFT JOIN (SELECT * FROM subscription.SubscriptionHistory sh WHERE sh.id IN (
