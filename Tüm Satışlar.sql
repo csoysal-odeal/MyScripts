@@ -370,6 +370,13 @@ SELECT * FROM odeal_web_form owf
          LEFT JOIN field_data fd ON fd.field_data_id = owf.contact_type AND fd.os_app_id = "odeal" AND fd.os_model_id = "web_form" AND fd.field_id = "contact_type"
          WHERE owf.webform_referer IS NULL ORDER BY owf.created_on DESC
 
-SELECT os.web_form_numarasi, os.sales_date, os.mali_no, os.organisation_id, os.lead, owf.odeal_web_form_id, owf.utm_source,owf.ip FROM odeal_satis os
-                                                                                    LEFT JOIN odeal_web_form owf ON owf.odeal_web_form_id = os.web_form_numarasi WHERE owf.ip IS NOT NULL
-                                                                                    ORDER BY os.web_form_numarasi DESC
+SELECT
+       os.organisation_id as UyeID,
+       GROUP_CONCAT("Satış ID : ",os.odeal_satis_id,",","Mali No : ",os.mali_no,","," Cihaz Bedeli : ",os.invoice_total,","," Vadeli mi : ",IF(oi.vadeli=1,"Vadeli","Vadesiz")) as MaliNo_CihazBedeli_Vade
+FROM odeal_satis os
+JOIN odeal_invoice oi ON oi.organizasyon_id  = os.organisation_id
+WHERE os.organisation_id IS NOT NULL
+AND os.odeal_satis_id IN (
+SELECT MAX(os.odeal_satis_id) FROM odeal_satis os WHERE os.organisation_id IS NOT NULL GROUP BY os.organisation_id, os.mali_no);
+
+SELECT oi.subscription_id, odeal_id, oi.vadeli  FROM odeal_invoice oi WHERE oi.organizasyon_id =301000079;

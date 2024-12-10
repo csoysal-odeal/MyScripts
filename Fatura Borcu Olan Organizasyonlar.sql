@@ -18,14 +18,6 @@ WHERE sh.id IN (SELECT MAX(sh.id) FROM subscription.SubscriptionHistory sh WHERE
 SELECT * FROM subscription.SubscriptionHistory sh WHERE sh.subscriptionId = 525624
 
 
-PAX710033931
-
-SELECT t.organisation_id, t.serial_no, tp.id, bp.id, bp.amount, bp.paybackId, bp.signedDate, p.id, p.amount FROM odeal.Terminal t 
-LEFT JOIN odeal.TerminalPayment tp ON tp.terminal_id = t.id
-LEFT JOIN odeal.BasePayment bp ON bp.id = tp.id
-LEFT JOIN odeal.Payback p ON p.id = bp.paybackId
-WHERE t.serial_no = "PAX710033931"
-
 
 SELECT *,
 COUNT(CASE WHEN Fatura.FaturaDurum="ÖDENDİ" THEN Fatura.terminalId END) OVER (PARTITION BY Fatura.Donem, Fatura.organisationId, Fatura.terminalId) as OdendiDonemAdet,
@@ -298,43 +290,78 @@ SELECT MAX(sh1.id) FROM subscription.SubscriptionHistory sh1 GROUP BY sh1.subscr
 LEFT JOIN odeal.Terminal t ON t.id = SH.terminalId
 JOIN odeal.Organisation o ON o.id = t.organisation_id AND o.demo = 0
 LEFT JOIN odeal.Merchant m ON m.organisationId = o.id AND m.role = 0
-WHERE SH.terminalId IS NOT NULL AND o.id = 301000162) as Fatura;
+WHERE SH.terminalId IS NOT NULL AND o.id = 301000079) as Fatura;
 
 
 
-SELECT DATE_FORMAT(i.periodEnd,"%Y-%m") as Donem, CASE WHEN i.invoiceStatus=0 THEN "ÖDENMEDİ"
-    WHEN i.invoiceStatus=1 THEN "ÖDENDİ"
-    WHEN i.invoiceStatus=2 THEN "ÖDENMEYECEK"
-    WHEN i.invoiceStatus=3 THEN "HUKUKİ SÜREÇTE"
-    END as FaturaDurum, COUNT(i.id) as Adet
+SELECT i.organisationId, GROUP_CONCAT(i.period) as Period, GROUP_CONCAT(DATE_FORMAT(i.periodStart,"%Y-%m-%d")) as PeriodBaslangic,
+       GROUP_CONCAT(DATE_FORMAT(i.periodEnd,"%Y-%m-%d")) as PeriodBitis, COUNT(*) as Bos_Fatura_Donem
 FROM subscription.Invoice i
-LEFT JOIN (SELECT * FROM subscription.SubscriptionHistory sh WHERE sh.id IN (
-SELECT MAX(sh1.id) FROM subscription.SubscriptionHistory sh1 GROUP BY sh1.subscriptionId)) as SH ON SH.subscriptionId = i.subscriptionId
-LEFT JOIN odeal.Terminal t ON t.id = SH.terminalId
-JOIN odeal.Organisation o ON o.id = t.organisation_id AND o.demo = 0
-LEFT JOIN odeal.Merchant m ON m.organisationId = o.id AND m.role = 0
-WHERE SH.terminalId IS NOT NULL
-GROUP BY DATE_FORMAT(i.periodEnd,"%Y-%m"), CASE WHEN i.invoiceStatus=0 THEN "ÖDENMEDİ"
+JOIN odeal.Organisation o ON o.id = i.organisationId
+WHERE i.periodStart IS NULL AND i.periodEnd IS NULL
+GROUP BY i.organisationId
+
+
+SELECT
+    (SELECT GROUP_CONCAT(DATE_FORMAT(i.periodEnd,"%Y-%m")) as Donem FROM subscription.Invoice i WHERE i.invoiceStatus = 0 AND i.organisationId = o.id GROUP BY i.organisationId) as OdenmediDonem,
+        (SELECT GROUP_CONCAT(DATE_FORMAT(i.periodEnd,"%Y-%m")) as Donem FROM subscription.Invoice i WHERE i.invoiceStatus = 1 AND i.organisationId = o.id GROUP BY i.organisationId) as OdendiDonem,
+            (SELECT GROUP_CONCAT(DATE_FORMAT(i.periodEnd,"%Y-%m")) as Donem FROM subscription.Invoice i WHERE i.invoiceStatus = 2 AND i.organisationId = o.id GROUP BY i.organisationId) as OdenmeyecekDonem,
+                (SELECT GROUP_CONCAT(DATE_FORMAT(i.periodEnd,"%Y-%m")) as Donem FROM subscription.Invoice i WHERE i.invoiceStatus = 3 AND i.organisationId = o.id GROUP BY i.organisationId) as HukukiSurecDonem,
+    o.vergiNo,
+    m.tckNo,
+    IF(o.isActivated=1,"Aktif","Pasif") as UyeDurum,
+    i.id as FaturaID,
+    i.subscriptionId as AbonelikID,
+    i.organisationId as UyeIsyeriID,
+    DATE_FORMAT(i.periodEnd,"%Y-%m") as Donem,
+    i.periodStart,
+    i.periodEnd,
+    i.receiver,
+    i.totalAmount as FaturaBedeli,
+    i.totalVat as Vergi,
+    i.remainingAmount as Bakiye,
+    i.vadeli,
+    CASE WHEN i.invoiceStatus=0 THEN "ÖDENMEDİ"
     WHEN i.invoiceStatus=1 THEN "ÖDENDİ"
     WHEN i.invoiceStatus=2 THEN "ÖDENMEYECEK"
     WHEN i.invoiceStatus=3 THEN "HUKUKİ SÜREÇTE"
-    END
+    END as FaturaDurum
+FROM subscription.Invoice i
+JOIN odeal.Organisation o ON o.id = i.organisationId AND o.demo = 0
+LEFT JOIN odeal.Merchant m ON m.organisationId = o.id AND m.role = 0
+WHERE o.id = 301000079;
+
+SELECT  GROUP_CONCAT(DATE_FORMAT(i.periodEnd,"%Y-%m")) as Donem
+FROM subscription.Invoice i
+WHERE i.invoiceStatus = 2 AND i.organisationId = 301000079
+GROUP BY i.organisationId;
+
+SELECT i.vadeli, COUNT(*) FROM subscription.Invoice i
+GROUP BY i.vadeli
+
+SELECT COUNT(*)
+FROM subscription.Invoice i
+JOIN odeal.Organisation o ON o.id = i.organisationId
+WHERE i.periodStart IS NULL AND i.periodEnd IS NULL
+
+SELECT * FROM subscription.Invoice i WHERE i.organisationId = 301018903;
+
+SELECT
+
+SELECT o.id, t.serial_no  FROM odeal.Organisation o
+JOIN odeal.Terminal t ON t.organisation_id = o.id WHERE o.id = 301000079
+
 
 SELECT bp.signedDate, bp.subscriptionId, bp.appliedRate, bp.paymentType, bp.currentStatus, bp.paymentFacilitator FROM odeal.BasePayment bp
                                                                            WHERE bp.currentStatus = 6 AND bp.paymentType <> 4
                                                                            ORDER BY bp._createdDate DESC LIMIT 10000
 
-SELECT
-ROW_NUMBER() over (PARTITION BY o.id ORDER BY t.firstActivationDate) as Sira,
-o.id, o.activatedAt, o.isActivated, o.deActivatedAt, t.serial_no, t.firstActivationDate, t.terminalStatus, t.deactivationDate FROM odeal.Organisation o
-JOIN odeal.Terminal t ON t.organisation_id = o.id
-WHERE o.id = 301196054;
 
 SELECT * FROM subscription.Invoice i WHERE i.organisationId = 301000079;
 
-SELECT * FROM subscription.SubscriptionHistory sh WHERE sh.subscriptionId = 27093
+SELECT * FROM subscription.SubscriptionHistory sh WHERE sh.terminalId = 285;
 
 SELECT i.subscriptionId, SH.subscriptionId, COUNT(*) FROM subscription.Invoice i
                                   LEFT JOIN (SELECT * FROM subscription.SubscriptionHistory sh WHERE sh.id IN (
 SELECT MAX(sh1.id) FROM subscription.SubscriptionHistory sh1 GROUP BY sh1.subscriptionId)) as SH ON SH.subscriptionId = i.subscriptionId
-                                  WHERE i.organisationId = 301000162 GROUP BY i.subscriptionId
+                                  WHERE i.organisationId = 301000079 GROUP BY i.subscriptionId
