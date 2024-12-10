@@ -372,11 +372,12 @@ SELECT * FROM odeal_web_form owf
 
 SELECT
        os.organisation_id as UyeID,
-       GROUP_CONCAT("Satış ID : ",os.odeal_satis_id,",","Mali No : ",os.mali_no,","," Cihaz Bedeli : ",os.invoice_total,","," Vadeli mi : ",IF(oi.vadeli=1,"Vadeli","Vadesiz")) as MaliNo_CihazBedeli_Vade
+       GROUP_CONCAT("Satış ID : ",os.odeal_satis_id,",","Mali No : ",os.mali_no,","," Cihaz Bedeli : ",os.invoice_total) as MaliNo_CihazBedeli_Vade
 FROM odeal_satis os
 JOIN odeal_invoice oi ON oi.organizasyon_id  = os.organisation_id
-WHERE os.organisation_id IS NOT NULL
+WHERE os.organisation_id IS NOT NULL AND os.invoice_total IS NOT NULL
 AND os.odeal_satis_id IN (
-SELECT MAX(os.odeal_satis_id) FROM odeal_satis os WHERE os.organisation_id IS NOT NULL GROUP BY os.organisation_id, os.mali_no);
+SELECT MAX(os.odeal_satis_id) FROM odeal_satis os WHERE os.organisation_id IS NOT NULL GROUP BY os.organisation_id, os.mali_no)
+GROUP BY os.organisation_id;
 
 SELECT oi.subscription_id, odeal_id, oi.vadeli  FROM odeal_invoice oi WHERE oi.organizasyon_id =301000079;

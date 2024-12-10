@@ -11,6 +11,8 @@ where date(period)>= '2021-01-01'
 and i.remainingAmount > 0
 
 
+
+
 SELECT sh.subscriptionId, t.serial_no, t.organisation_id FROM subscription.SubscriptionHistory sh 
 LEFT JOIN odeal.Terminal t ON t.id = sh.terminalId
 WHERE sh.id IN (SELECT MAX(sh.id) FROM subscription.SubscriptionHistory sh WHERE sh.terminalId IS NOT NULL GROUP BY sh.terminalId, sh.subscriptionId)
